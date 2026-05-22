@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 3028;
 
 // Early middleware setup
 import { setupEarlyMiddleware } from './src/services/middleware';
@@ -14,6 +14,9 @@ setupEarlyMiddleware(app);
 import { createHealthRouter } from './src/services/health';
 app.use('/', createHealthRouter());
 app.use('/api/health', createHealthRouter());
+
+import { createTranscriptRouter } from './src/routes/create-transcript-router';
+app.use('/api/transcript', createTranscriptRouter());
 
 // Error handling middleware (must be after all routes)
 import { setupErrorHandling } from './src/services/middleware';
