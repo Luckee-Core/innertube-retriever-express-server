@@ -3,30 +3,39 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const app = express();
+import { setupEarlyMiddleware } from './src/services/middleware';
+import { setupErrorHandling } from './src/services/middleware';
+import { createHealthRouter } from './src/services/health';
+import { createTranscriptRouter } from './src/routes/create-transcript-router';
+import { createDataRouter } from './src/services/api-data/router';
+import { initManagedClients } from './src/services/managed';
+import { startServer } from './src/services/server';
+
 const PORT = Number(process.env.PORT) || 3028;
 
-// Early middleware setup
-import { setupEarlyMiddleware } from './src/services/middleware';
-setupEarlyMiddleware(app);
+/**
+ * Bootstraps Express: init managed clients, mount routes, start listening.
+ */
+const bootstrap = async (): Promise<void> => {
+  await initManagedClients();
 
-// Health check routes
-import { createHealthRouter } from './src/services/health';
-app.use('/', createHealthRouter());
-app.use('/api/health', createHealthRouter());
+  const app = express();
 
-import { createTranscriptRouter } from './src/routes/create-transcript-router';
-app.use('/api/transcript', createTranscriptRouter());
+  setupEarlyMiddleware(app);
 
-// Error handling middleware (must be after all routes)
-import { setupErrorHandling } from './src/services/middleware';
-setupErrorHandling(app);
+  app.use('/', createHealthRouter());
+  app.use('/api/health', createHealthRouter());
+  app.use('/api/transcript', createTranscriptRouter());
+  app.use('/api/data', createDataRouter());
 
-// Start server
-import { startServer } from './src/services/server';
-startServer(app, {
-  port: PORT,
-  environment: process.env.NODE_ENV || 'development'
-});
+  setupErrorHandling(app);
 
-export default app;
+  startServer(app, {
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+  });
+};
+
+void bootstrap();
+
+export default express();
