@@ -11,7 +11,7 @@ import { createDataRouter } from './src/services/api-data/router';
 import { initManagedClients } from './src/services/managed';
 import { startServer } from './src/services/server';
 
-const PORT = Number(process.env.PORT) || 3028;
+const PORT = Number(process.env.PORT) || 3048;
 
 /**
  * Bootstraps Express: init managed clients, mount routes, start listening.
